@@ -1,8 +1,9 @@
 package command
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestExecute(t *testing.T) {
-	Execute("ls", "/")
-	Execute("ls", "/asdfasdf")
+	Execute("/bin/bash", "-c", "sleep 10 && echo a")
 }

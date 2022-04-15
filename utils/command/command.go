@@ -2,7 +2,6 @@ package command
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os/exec"
 	"strings"
@@ -28,10 +27,10 @@ func Execute(name string, arg ...string) {
 	errScanner := bufio.NewScanner(stderrPipe)
 	errScanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		log.Println(scanner.Text())
 	}
 	for errScanner.Scan() {
-		fmt.Println(errScanner.Text())
+		log.Println(errScanner.Text())
 	}
 	_ = cmd.Wait()
 }

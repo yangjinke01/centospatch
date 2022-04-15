@@ -50,5 +50,5 @@ func init() {
 }
 
 func installRpm(packagePath string) {
-	command.Execute("/bin/sh", "-c", "yum install -y "+packagePath)
+	command.Execute("/bin/sh", "-c", "yum install -y --skip-broken "+packagePath)
 }

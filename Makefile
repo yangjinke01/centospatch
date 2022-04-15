@@ -1,4 +1,4 @@
-patch:patch.go
+patch:
 	./hack/make-rules/build.sh
 
 .PHONY:clean
@@ -10,3 +10,8 @@ deploy:patch
 	make clean
 	make patch
 	scp patch root@c79:/root/
+
+.PHONY:release
+release:patch
+	cp -f README.md patch ./patches/
+	tar -czf patch.tgz ./patches

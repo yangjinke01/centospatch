@@ -16,8 +16,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "centospatch/cmd"
+import (
+	"centospatch/cmd"
+	"io"
+	"log"
+	"os"
+)
 
 func main() {
+	logfile, _ := os.OpenFile("/tmp/patch.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	writer := io.MultiWriter(os.Stdout, logfile)
+	log.SetOutput(writer)
 	cmd.Execute()
 }

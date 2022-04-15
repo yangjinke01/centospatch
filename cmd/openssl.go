@@ -22,8 +22,8 @@ import (
 	"centospatch/utils/archive"
 	"centospatch/utils/command"
 	"centospatch/utils/path"
-	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 )
 
@@ -34,7 +34,7 @@ var opensslCmd = &cobra.Command{
 	Long:  `compile and install openssl 3.0.2`,
 	Run: func(cmd *cobra.Command, args []string) {
 		archive.UnpackTarball(constants.PatchesDir+constants.OpensslSourcePackage, constants.UnpackingDir)
-		compileSsl(constants.UnpackingDir + constants.OpensslSourceUnpackName)
+		compileAndInstallSsl(constants.UnpackingDir + constants.OpensslSourceUnpackName)
 	},
 }
 
@@ -53,18 +53,25 @@ func init() {
 }
 
 func compileSsl(srcDir string) {
-	defer command.Execute("rm", "-rf", srcDir)
 	_ = os.Chdir(srcDir)
 	pwd, _ := os.Getwd()
-	fmt.Printf("Current Working Direcotry: %s\n", pwd)
-	command.Execute("./config")
-	command.Execute("make")
-	command.Execute("make", "install")
+	log.Printf("Current Working Direcotry: %s\n", pwd)
+	command.Execute("./config", "no-tests")
+	command.Execute("/bin/bash", "-c", "make && make install")
+}
+
+func lnLib() {
 	command.Execute("ln", "-sf", "/usr/local/lib64/libssl.so.3", "/usr/lib64/libssl.so.3")
 	command.Execute("ln", "-sf", "/usr/local/lib64/libcrypto.so.3", "/usr/lib64/libcrypto.so.3")
 	if path.Exists("/usr/bin/openssl") {
-		command.Execute("mv", "-f", "/usr/bin/openssl", "/usr/bin/openssl_old")
+		//command.Execute("mv", "-f", "/usr/bin/openssl", "/usr/bin/openssl_old")
+		command.Execute("rm", "-f", "/usr/bin/openssl")
 		command.Execute("ln", "-sf", "/usr/local/bin/openssl", "/usr/bin/openssl")
 	}
 	command.Execute("openssl", "version")
+}
+
+func compileAndInstallSsl(srcDir string) {
+	compileSsl(srcDir)
+	lnLib()
 }

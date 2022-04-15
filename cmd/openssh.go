@@ -22,8 +22,8 @@ import (
 	"centospatch/utils/archive"
 	"centospatch/utils/command"
 	"centospatch/utils/path"
-	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 )
 
@@ -53,33 +53,30 @@ func addNewService(srcDir string) {
 	command.Execute("systemctl", "daemon-reload")
 	command.Execute("chkconfig", "--add", "sshd")
 	command.Execute("chkconfig", "sshd", "on")
+	command.Execute("ssh", "-V")
 }
 
 func preCheck() {
 	if !path.Exists("/etc/ssh_old") {
-		command.Execute("mkdir", "/etc/ssh_old")
-		command.Execute("/bin/sh", "-c", "mv", "/etc/ssh/*", "/etc/ssh_old/")
+		command.Execute("rm -rf", "/etc/ssh_old")
+		command.Execute("mv", "/etc/ssh", "/etc/ssh_old/")
 	}
 }
 
 func compile(srcDir string) {
 	_ = os.Chdir(srcDir)
 	pwd, _ := os.Getwd()
-	fmt.Printf("Current Working Direcotry: %s\n", pwd)
+	log.Printf("Current Working Direcotry: %s\n", pwd)
 	command.Execute("./configure", "--prefix=/usr/", "--sysconfdir=/etc/ssh",
-		"--with-ssl-dir=/usr/local/lib64/", "--with-md5-password", "--with-ssl-engine")
-	command.Execute("make")
-	command.Execute("make", "install")
-	command.Execute("ssh", "-V")
+		"--with-ssl-dir=/usr/local/lib64/", "--with-ssl-engine")
+	command.Execute("/bin/bash", "-c", "make && make install")
 }
 
 func compileSsh(srcDir string) {
-	defer command.Execute("rm", "-rf", srcDir)
 	preCheck()
 	compile(srcDir)
 	rootLogin()
 	rmOldService()
-	command.Execute("cp", "-af", "contrib/redhat/sshd.init", "/etc/init.d/sshd")
 	addNewService(srcDir)
 }
 
